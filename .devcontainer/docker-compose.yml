@@ -1,0 +1,11 @@
+name: gogl-playground
+version: '3.8'
+services:
+  devcontainer:
+    container_name: gogl-playground-devcontainer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
