@@ -316,3 +316,67 @@ Fase 4: Shadow Mapping (avançado)
 ├── Shadow pass separada
 └── Calcular sombras no fragment shader
 ```
+
+---
+
+## Checkpoints de Aprendizado
+
+### Perguntas que você deve conseguir responder
+
+#### Fundamentos 3D & OpenGL
+- [ ] O que é um VAO, VBO e EBO? Por que preciso de cada um?
+- [ ] Por que as matrizes são column-major no OpenGL?
+- [ ] Qual a diferença entre `gl.DrawArrays` e `gl.DrawElements`?
+- [ ] O que acontece se eu não habilitar `gl.DEPTH_TEST`?
+- [ ] Por que normais precisam ser transformadas com `transpose(inverse(model))`?
+
+#### Pipeline de Renderização
+- [ ] Qual a ordem de multiplicação das matrizes Model → View → Projection?
+- [ ] O que o vertex shader faz vs o fragment shader?
+- [ ] O que são uniforms e como diferem de vertex attributes?
+- [ ] Por que preciso normalizar vetores antes do `dot()` no shader?
+
+#### glTF & Carga de Modelos
+- [ ] O que é a scene graph e por que transformações são acumuladas recursivamente?
+- [ ] Qual a diferença entre um quaternion e ângulos de Euler para rotação?
+- [ ] O que significa "buffer interleaved" (pos + normal + uv)?
+- [ ] Como o glTF organiza Meshes → Primitives → Accessors → BufferViews?
+
+#### Iluminação (para a task atual)
+- [ ] Qual a fórmula do modelo de iluminação Phong (ambient + diffuse + specular)?
+- [ ] Por que `max(dot(N, L), 0.0)` é necessário no diffuse?
+- [ ] O que muda entre Phong e Blinn-Phong?
+- [ ] Como funciona atenuação de point lights?
+
+### Implementações que você deve conseguir fazer
+
+#### Nível 1 - Validação básica
+- [ ] Mudar a cor de fundo para outra cor (prova que entende o game loop)
+- [ ] Trocar a direção da luz e ver o efeito (prova que entende o uniform)
+- [ ] Carregar um modelo diferente alterando só o path (prova que entende o loader)
+
+#### Nível 2 - Modificações simples
+- [ ] Adicionar rotação no eixo X além do Y existente
+- [ ] Implementar zoom com scroll do mouse (alterar distância da câmera)
+- [ ] Mudar `ambientStrength` de 0.2 para outro valor e ver o impacto
+
+#### Nível 3 - Features novas
+- [ ] Adicionar specular highlight (Blinn-Phong) ao fragment shader
+- [ ] Passar a posição da câmera (`viewPos`) como uniform
+- [ ] Criar uma segunda luz direcional com cor diferente
+
+#### Nível 4 - Arquitetura
+- [ ] Extrair os shaders para arquivos `.glsl` separados
+- [ ] Criar uma struct `Light` em Go e passá-la como uniforms
+- [ ] Implementar um sistema de input para mover a câmera com WASD
+
+### Auto-diagnóstico
+
+Se você consegue responder **80%+ das perguntas** e fazer as **implementações até o Nível 3**, está pronto para avançar para:
+- Shadow Mapping
+- PBR (Physically Based Rendering)
+- Sistema de animações (skeletal animation)
+
+Se está com dificuldade no **Nível 1-2**, foque em:
+- [LearnOpenGL - Getting Started](https://learnopengl.com/Getting-started/Hello-Triangle)
+- [3Blue1Brown - Essence of Linear Algebra](https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab)
