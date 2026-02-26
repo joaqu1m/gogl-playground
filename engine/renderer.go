@@ -6,8 +6,8 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/joaqu1m/gogl-playground/domain/model"
+	"github.com/joaqu1m/gogl-playground/gmath"
 	"github.com/joaqu1m/gogl-playground/libs/logger"
-	gmath "github.com/joaqu1m/gogl-playground/math"
 )
 
 type App struct {

@@ -6,9 +6,9 @@ import (
 
 	"github.com/joaqu1m/gogl-playground/domain/model"
 	"github.com/joaqu1m/gogl-playground/engine"
+	"github.com/joaqu1m/gogl-playground/gmath"
 	"github.com/joaqu1m/gogl-playground/libs/entities"
 	"github.com/joaqu1m/gogl-playground/libs/logger"
-	gmath "github.com/joaqu1m/gogl-playground/math"
 )
 
 const (

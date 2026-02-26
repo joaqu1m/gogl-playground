@@ -1,6 +1,6 @@
 package entities
 
-import gmath "github.com/joaqu1m/gogl-playground/math"
+import "github.com/joaqu1m/gogl-playground/gmath"
 
 func IdentityQuat() gmath.Quaternion {
 	return gmath.Quaternion{X: 0, Y: 0, Z: 0, W: 1}
