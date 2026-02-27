@@ -6,8 +6,8 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/joaqu1m/gogl-playground/domain/model"
+	"github.com/joaqu1m/gogl-playground/gmath"
 	"github.com/joaqu1m/gogl-playground/libs/logger"
-	gmath "github.com/joaqu1m/gogl-playground/math"
 )
 
 type App struct {
@@ -64,21 +64,18 @@ func (a *App) Run() {
 }
 
 func (a *App) draw() {
-	a.angle += 1.0 * a.timeAccum
 
 	gl.ClearColor(0.1, 0.1, 0.15, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 	gl.UseProgram(a.shaderProgram)
 
-	// Rotação global compartilhada por todos os modelos
-	rotMat := gmath.MatRotateY(float32(a.angle))
-
 	viewMat := gmath.MatLookAt(
 		[3]float32{0, 0.8, 3.0},
 		[3]float32{0, 0, 0},
 		[3]float32{0, 1, 0},
 	)
+
 	projMat := gmath.MatPerspective(
 		float32(45.0*math.Pi/180.0),
 		float32(a.width)/float32(a.height),
@@ -89,27 +86,45 @@ func (a *App) draw() {
 	gmath.SetUniformMat4(a.shaderProgram, "projection", projMat)
 	gmath.SetUniformVec3(a.shaderProgram, "lightDir", [3]float32{-0.3, -0.8, -0.5})
 
-	// Renderiza cada modelo da cena
-	for _, entry := range a.models {
-		// Transform por modelo: translate * rotate * scale
-		scaleMat := gmath.MatScale(entry.Scale.Width, entry.Scale.Height, entry.Scale.Depth)
-		transMat := gmath.MatTranslate(entry.Translation.ToArray())
-		baseMat := gmath.MatMul(transMat, gmath.MatMul(rotMat, scaleMat))
+	// ----------- Render por modelo -----------
 
-		logger.Debugf(entry.Name)
+	for _, entry := range a.models {
+
+		t := entry.Transform
+
+		// Usa apenas a rotação definida no Transform
+		rotMat := t.Rotation.Normalize().ToMat4()
+		transMat := gmath.MatTranslate(t.Position)
+		scaleMat := gmath.MatScale(t.Scale.X, t.Scale.Y, t.Scale.Z)
+
+		// Ordem correta: T * R * S
+		baseMat := gmath.MatMul(
+			transMat,
+			gmath.MatMul(rotMat, scaleMat),
+		)
+
 		for _, m := range entry.LoadedModel.Meshes {
+
 			modelMat := gmath.MatMul(baseMat, gmath.Mat4(m.Transform))
 			gmath.SetUniformMat4(a.shaderProgram, "model", modelMat)
 
 			// Material
 			bcLoc := gl.GetUniformLocation(a.shaderProgram, gl.Str("baseColor\x00"))
-			gl.Uniform4f(bcLoc, m.BaseColor[0], m.BaseColor[1], m.BaseColor[2], m.BaseColor[3])
+			gl.Uniform4f(
+				bcLoc,
+				m.BaseColor[0],
+				m.BaseColor[1],
+				m.BaseColor[2],
+				m.BaseColor[3],
+			)
 
 			utLoc := gl.GetUniformLocation(a.shaderProgram, gl.Str("useTexture\x00"))
+
 			if m.HasTexture {
 				gl.Uniform1i(utLoc, 1)
 				gl.ActiveTexture(gl.TEXTURE0)
 				gl.BindTexture(gl.TEXTURE_2D, m.TextureID)
+
 				dmLoc := gl.GetUniformLocation(a.shaderProgram, gl.Str("diffuseMap\x00"))
 				gl.Uniform1i(dmLoc, 0)
 			} else {
@@ -117,6 +132,7 @@ func (a *App) draw() {
 			}
 
 			gl.BindVertexArray(m.VAO)
+
 			if m.HasIndices {
 				gl.DrawElements(gl.TRIANGLES, m.IndexCount, gl.UNSIGNED_INT, gl.PtrOffset(0))
 			} else {

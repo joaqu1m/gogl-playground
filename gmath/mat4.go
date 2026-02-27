@@ -1,12 +1,26 @@
-package math
+package gmath
 
 import (
+	"math"
 	smath "math"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
 type Mat4 [16]float32
+
+type Quaternion struct {
+	X float32
+	Y float32
+	Z float32
+	W float32
+}
+
+type Vec3 struct {
+	X float32
+	Y float32
+	Z float32
+}
 
 func MatIdentity() Mat4 {
 	return Mat4{
@@ -84,15 +98,6 @@ func MatScale(sx, sy, sz float32) Mat4 {
 	}
 }
 
-func MatTranslate(t [3]float32) Mat4 {
-	return Mat4{
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		t[0], t[1], t[2], 1,
-	}
-}
-
 func MatPerspective(fovy, aspect, near, far float32) Mat4 {
 	f := float32(1.0 / smath.Tan(float64(fovy/2.0)))
 	nf := near - far
@@ -152,4 +157,76 @@ func SetUniformMat4(program uint32, name string, m Mat4) {
 func SetUniformVec3(program uint32, name string, v [3]float32) {
 	loc := gl.GetUniformLocation(program, gl.Str(name+"\x00"))
 	gl.Uniform3f(loc, v[0], v[1], v[2])
+}
+
+func MatTranslate(v Vec3) Mat4 {
+	return Mat4{
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		v.X, v.Y, v.Z, 1,
+	}
+}
+
+//Func para rotações com quaternions
+
+func QuatFromAxisAngle(axis Vec3, angleRad float32) Quaternion {
+	half := angleRad / 2
+	s := float32(math.Sin(float64(half)))
+	c := float32(math.Cos(float64(half)))
+
+	return Quaternion{
+		X: axis.X * s,
+		Y: axis.Y * s,
+		Z: axis.Z * s,
+		W: c,
+	}
+}
+
+func MultiplyQuat(a, b Quaternion) Quaternion {
+	return Quaternion{
+		W: a.W*b.W - a.X*b.X - a.Y*b.Y - a.Z*b.Z,
+		X: a.W*b.X + a.X*b.W + a.Y*b.Z - a.Z*b.Y,
+		Y: a.W*b.Y - a.X*b.Z + a.Y*b.W + a.Z*b.X,
+		Z: a.W*b.Z + a.X*b.Y - a.Y*b.X + a.Z*b.W,
+	}
+}
+
+func (q Quaternion) ToMat4() Mat4 {
+	x := q.X
+	y := q.Y
+	z := q.Z
+	w := q.W
+
+	return Mat4{
+		1 - 2*y*y - 2*z*z,
+		2*x*y + 2*w*z,
+		2*x*z - 2*w*y,
+		0,
+
+		2*x*y - 2*w*z,
+		1 - 2*x*x - 2*z*z,
+		2*y*z + 2*w*x,
+		0,
+
+		2*x*z + 2*w*y,
+		2*y*z - 2*w*x,
+		1 - 2*x*x - 2*y*y,
+		0,
+
+		0, 0, 0, 1,
+	}
+}
+
+func (q Quaternion) Normalize() Quaternion {
+	length := float32(math.Sqrt(float64(
+		q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W,
+	)))
+
+	return Quaternion{
+		X: q.X / length,
+		Y: q.Y / length,
+		Z: q.Z / length,
+		W: q.W / length,
+	}
 }

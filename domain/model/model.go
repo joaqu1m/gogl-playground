@@ -9,25 +9,25 @@ import (
 type Model struct {
 	Name        string
 	FilePath    string
-	Scale       entities.Dimensions
-	Translation entities.Dimensions
+	Transform   entities.Transform
 	LoadedModel gltfloader.GLTFModel
 }
 
-func NewModel(name, filePath string, scale, translation entities.Dimensions) Model {
+func NewModel(name, filePath string, transform entities.Transform) Model {
 
 	logger.Debugf("Loading model %s from path %s", name, filePath)
+
 	loaded, err := gltfloader.LoadGLB(filePath)
 	if err != nil || loaded == nil {
 		logger.Fatalf("Failed to load model %s from path %s: %v", name, filePath, err)
 	}
+
 	logger.Debugf("Loaded model %s from path %s", name, filePath)
 
 	return Model{
 		Name:        name,
 		FilePath:    filePath,
-		Scale:       scale,
-		Translation: translation,
+		Transform:   transform,
 		LoadedModel: *loaded,
 	}
 }
