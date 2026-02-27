@@ -18,7 +18,7 @@ Nome provisório, a ideia por enquanto é criar um playground para experimentar 
 - [ ] Implementar iluminação e sombreamento
 
 ### Build & Run multiplataforma
-- [ ] Testar compilação e execução em **Linux**
+- [X] Testar compilação e execução em **Linux**
 - [ ] Testar compilação e execução em **macOS**
 
 ### Pesquisa e Implementação Vulkan *(casado com a pesquisa de CGO)*

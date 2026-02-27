@@ -4,6 +4,7 @@ import (
 	"math"
 	"runtime"
 
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/joaqu1m/gogl-playground/domain/model"
 	"github.com/joaqu1m/gogl-playground/engine"
 	"github.com/joaqu1m/gogl-playground/gmath"
@@ -27,9 +28,9 @@ func main() {
 
 	app := engine.NewApp(width, height, "OpenGL 4.1 Playground")
 
-	models := []model.Model{
+	app.Models = []model.Model{
 		model.NewModel(
-			"Demogorgon",
+			"Eleven",
 			"assets/dead_by_daylight_-_eleven.glb",
 			entities.Transform{
 				Position: gmath.Vec3{X: 0, Y: 0, Z: 0},
@@ -54,8 +55,22 @@ func main() {
 		),
 	}
 
-	app.SetModels(models)
-	app.Run()
+	previousTime := glfw.GetTime()
+
+	for !app.Window.ShouldClose() {
+
+		currentTime := glfw.GetTime()
+		app.TimeAccum = currentTime - previousTime
+		previousTime = currentTime
+
+		app.Draw()
+
+		app.Window.SwapBuffers()
+		glfw.PollEvents()
+	}
+
+	logger.Infof("Exiting game loop")
+	glfw.Terminate()
 
 	logger.Infof("Game closed")
 }
