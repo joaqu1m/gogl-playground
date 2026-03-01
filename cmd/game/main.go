@@ -76,17 +76,17 @@ func main() {
 
 	previousTime := glfw.GetTime()
 
-	for !app.Window.ShouldClose() {
+	for !app.Window.GLFWWindow.ShouldClose() {
 
 		currentTime := glfw.GetTime()
 		app.TimeAccum = currentTime - previousTime
 		previousTime = currentTime
 
 		// update camera position/orientation before drawing
-		app.Update()
+		app.Camera.Update(float32(app.TimeAccum))
 		app.Draw()
 
-		app.Window.SwapBuffers()
+		app.Window.GLFWWindow.SwapBuffers()
 		glfw.PollEvents()
 	}
 
