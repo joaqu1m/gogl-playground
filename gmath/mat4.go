@@ -230,3 +230,38 @@ func (q Quaternion) Normalize() Quaternion {
 		W: q.W / length,
 	}
 }
+
+// Vec3 helpers --------------------------------------------------------------
+
+// Add returns the vector sum of v and u.
+func (v Vec3) Add(u Vec3) Vec3 {
+	return Vec3{X: v.X + u.X, Y: v.Y + u.Y, Z: v.Z + u.Z}
+}
+
+// Sub returns the vector difference v - u.
+func (v Vec3) Sub(u Vec3) Vec3 {
+	return Vec3{X: v.X - u.X, Y: v.Y - u.Y, Z: v.Z - u.Z}
+}
+
+// MulScalar scales the vector by a scalar.
+func (v Vec3) MulScalar(s float32) Vec3 {
+	return Vec3{X: v.X * s, Y: v.Y * s, Z: v.Z * s}
+}
+
+// Normalize returns the unit length version of the vector.
+func (v Vec3) Normalize() Vec3 {
+	l := float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+	if l == 0 {
+		return v
+	}
+	return Vec3{X: v.X / l, Y: v.Y / l, Z: v.Z / l}
+}
+
+// Cross returns the cross product of a and b.
+func Cross(a, b Vec3) Vec3 {
+	return Vec3{
+		X: a.Y*b.Z - a.Z*b.Y,
+		Y: a.Z*b.X - a.X*b.Z,
+		Z: a.X*b.Y - a.Y*b.X,
+	}
+}

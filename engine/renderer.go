@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"math"
-
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/joaqu1m/gogl-playground/domain/model"
@@ -17,6 +15,12 @@ type App struct {
 	TimeAccum     float64
 	Angle         float64
 	Models        []model.Model
+
+	Camera Camera
+}
+
+func (a *App) Update() {
+	a.Camera.Update(float32(a.TimeAccum))
 }
 
 func NewApp(width, height int, title string) *App {
@@ -31,13 +35,22 @@ func NewApp(width, height int, title string) *App {
 
 	initOpenGL()
 
-	return &App{
+	// construct the App first so that any future helper can access
+	// the app context (window, models, etc.).  the camera lives
+	// inside the app, so we create it after the struct exists and
+	// then assign it.  this also makes it easy to replace or swap
+	// cameras later if needed.
+	app := &App{
 		Window:        window,
 		Width:         width,
 		Height:        height,
 		ShaderProgram: createShaderProgram(),
 		Models:        []model.Model{},
 	}
+
+	app.Camera = NewFPSCamera(app.Window)
+
+	return app
 }
 
 func (a *App) Draw() {
@@ -47,16 +60,18 @@ func (a *App) Draw() {
 
 	gl.UseProgram(a.ShaderProgram)
 
-	viewMat := gmath.MatLookAt(
-		[3]float32{0, 0.8, 3.0},
-		[3]float32{0, 0, 0},
-		[3]float32{0, 1, 0},
+	viewMat := a.Camera.ViewMatrix()
+
+	projMat := a.Camera.ProjectionMatrix(
+		float32(a.Width) / float32(a.Height),
 	)
 
-	projMat := gmath.MatPerspective(
-		float32(45.0*math.Pi/180.0),
-		float32(a.Width)/float32(a.Height),
-		0.1, 100.0,
+	gmath.SetUniformMat4(a.ShaderProgram, "view", viewMat)
+	gmath.SetUniformMat4(a.ShaderProgram, "projection", projMat)
+
+	pos := a.Camera.Position()
+	gmath.SetUniformVec3(a.ShaderProgram, "viewPos",
+		[3]float32{pos.X, pos.Y, pos.Z},
 	)
 
 	gmath.SetUniformMat4(a.ShaderProgram, "view", viewMat)
