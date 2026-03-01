@@ -26,7 +26,22 @@ func init() {
 // é melhor trabalhar com radianos é menos problemas matematicos
 func main() {
 
+	// create application and automatically set up an FPS camera
+	// The camera will receive mouse movement events (cursor is
+	// disabled/hidden) and handle WASD+space/shift for translation.
 	app := engine.NewApp(width, height, "OpenGL 4.1 Playground")
+
+	// if you ever need to access the concrete FPSCamera instance
+	// you can assert the interface and call its methods directly:
+	//
+	//     cam := app.Camera.(*engine.FPSCamera)
+	//     cam.Pos = gmath.Vec3{X:0,Y:1,Z:5} // field is now "Pos"
+	//     cam.Yaw = 45
+	//     cam.updateCameraVectors()
+	//
+	// the mouse callback that updates yaw/pitch is already
+	// registered by NewFPSCamera above, so moving the real mouse
+	// in the window will make the scene look around.
 
 	app.Models = []model.Model{
 		model.NewModel(
@@ -55,6 +70,10 @@ func main() {
 		),
 	}
 
+	// the FPS camera created by NewApp already installs a mouse
+	// callback and hides the cursor.  you can still override the
+	// behavior here if you need custom logic.
+
 	previousTime := glfw.GetTime()
 
 	for !app.Window.ShouldClose() {
@@ -63,6 +82,8 @@ func main() {
 		app.TimeAccum = currentTime - previousTime
 		previousTime = currentTime
 
+		// update camera position/orientation before drawing
+		app.Update()
 		app.Draw()
 
 		app.Window.SwapBuffers()
