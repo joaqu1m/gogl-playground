@@ -1,4 +1,6 @@
 linux: # not tested in a real Linux environment
+	@dpkg -s libglfw3-dev libgl1-mesa-dev xorg-dev >/dev/null 2>&1 || \
+		(sudo apt-get update && sudo apt-get install -y libglfw3-dev libgl1-mesa-dev xorg-dev)
 	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o game ./cmd/game
 
 mac: # not tested in a real macOS environment

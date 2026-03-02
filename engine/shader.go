@@ -29,13 +29,20 @@ in vec2 vTexCoord;
 
 out vec4 FragColor;
 
-uniform vec3 lightDir;
 uniform sampler2D diffuseMap;
 uniform vec4 baseColor;
 uniform int useTexture;
 
+// Light uniforms — values sent from Go at runtime
+uniform vec3 lightColor;
+uniform vec3 lightDir;
+uniform float ambientStrength;
+uniform vec3 viewPos;
+uniform float specularStrength;
+uniform float shininess;
+
 void main() {
-	// Cor base: textura ou cor do material
+	// Base color: texture or material color
 	vec3 color;
 	if (useTexture == 1) {
 		color = texture(diffuseMap, vTexCoord).rgb * baseColor.rgb;
@@ -43,17 +50,28 @@ void main() {
 		color = baseColor.rgb;
 	}
 
-	// Ambient
-	float ambientStrength = 0.2;
-	vec3 ambient = ambientStrength * vec3(1.0);
-
-	// Diffuse
-	vec3 norm = normalize(vNormal);
+	vec3 norm  = normalize(vNormal);
 	vec3 light = normalize(-lightDir);
-	float diff = max(dot(norm, light), 0.0);
-	vec3 diffuse = diff * vec3(1.0);
 
-	vec3 result = (ambient + diffuse) * color;
+	// Ambient: constant base light, no angle involved
+	vec3 ambient = ambientStrength * lightColor;
+
+	// Diffuse: brightness depends on the angle between the surface normal and the light.
+	// dot(normal, light) = 1.0 if facing the light, 0.0 if perpendicular, <0 if facing away.
+	// max(..., 0.0) clamps negative values so back-faces don't subtract light.
+	float diff   = max(dot(norm, light), 0.0);
+	vec3 diffuse = diff * lightColor;
+
+	// Specular (Blinn-Phong): shiny highlight that changes based on where the camera is.
+	// halfDir is the vector halfway between the light and the observer.
+	// The closer halfDir is to the surface normal, the stronger the highlight.
+	// shininess controls how tight/small the highlight spot is.
+	vec3 viewDir  = normalize(viewPos - vFragPos);
+	vec3 halfDir  = normalize(light + viewDir);
+	float spec    = pow(max(dot(norm, halfDir), 0.0), shininess);
+	vec3 specular = specularStrength * spec * lightColor;
+
+	vec3 result = (ambient + diffuse + specular) * color;
 	FragColor = vec4(result, baseColor.a);
 }` + "\x00"
 
