@@ -159,6 +159,11 @@ func SetUniformVec3(program uint32, name string, v [3]float32) {
 	gl.Uniform3f(loc, v[0], v[1], v[2])
 }
 
+func SetUniformFloat(program uint32, name string, v float32) {
+	loc := gl.GetUniformLocation(program, gl.Str(name+"\x00"))
+	gl.Uniform1f(loc, v)
+}
+
 func MatTranslate(v Vec3) Mat4 {
 	return Mat4{
 		1, 0, 0, 0,

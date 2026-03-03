@@ -24,13 +24,14 @@ func (a *App) Draw() {
 	gmath.SetUniformMat4(sp, "projection", projMat)
 
 	pos := a.Camera.Position()
-	gmath.SetUniformVec3(sp, "viewPos",
-		[3]float32{pos.X, pos.Y, pos.Z},
-	)
+	gmath.SetUniformVec3(sp, "viewPos", [3]float32{pos.X, pos.Y, pos.Z})
 
-	gmath.SetUniformMat4(sp, "view", viewMat)
-	gmath.SetUniformMat4(sp, "projection", projMat)
-	gmath.SetUniformVec3(sp, "lightDir", [3]float32{-0.3, -0.8, -0.5})
+	l := a.Light
+	gmath.SetUniformVec3(sp, "lightColor", [3]float32{l.Color.X, l.Color.Y, l.Color.Z})
+	gmath.SetUniformVec3(sp, "lightDir", [3]float32{l.Direction.X, l.Direction.Y, l.Direction.Z})
+	gmath.SetUniformFloat(sp, "ambientStrength", l.AmbientStrength)
+	gmath.SetUniformFloat(sp, "specularStrength", l.SpecularStrength)
+	gmath.SetUniformFloat(sp, "shininess", l.Shininess)
 
 	// ----------- Render por modelo -----------
 

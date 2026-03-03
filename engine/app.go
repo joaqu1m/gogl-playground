@@ -12,6 +12,7 @@ type App struct {
 	TimeAccum      float64
 	Models         []model.Model
 	Camera         Camera
+	Light          Light
 }
 
 type DrawingContext struct {
@@ -33,6 +34,7 @@ func NewApp(width, height int, title string) *App {
 		},
 		Models: []model.Model{},
 		Camera: NewFPSCamera(window.GLFWWindow),
+		Light:  DefaultLight(),
 	}
 }
 
