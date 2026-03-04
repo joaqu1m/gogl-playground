@@ -20,18 +20,18 @@ func (a *App) Draw() {
 		float32(a.Window.Width) / float32(a.Window.Height),
 	)
 
-	gmath.SetUniformMat4(sp, "view", viewMat)
-	gmath.SetUniformMat4(sp, "projection", projMat)
+	SetUniformMat4(sp, "view", viewMat)
+	SetUniformMat4(sp, "projection", projMat)
 
 	pos := a.Camera.Position()
-	gmath.SetUniformVec3(sp, "viewPos", [3]float32{pos.X, pos.Y, pos.Z})
+	SetUniformVec3(sp, "viewPos", [3]float32{pos.X, pos.Y, pos.Z})
 
 	l := a.Light
-	gmath.SetUniformVec3(sp, "lightColor", [3]float32{l.Color.X, l.Color.Y, l.Color.Z})
-	gmath.SetUniformVec3(sp, "lightDir", [3]float32{l.Direction.X, l.Direction.Y, l.Direction.Z})
-	gmath.SetUniformFloat(sp, "ambientStrength", l.AmbientStrength)
-	gmath.SetUniformFloat(sp, "specularStrength", l.SpecularStrength)
-	gmath.SetUniformFloat(sp, "shininess", l.Shininess)
+	SetUniformVec3(sp, "lightColor", [3]float32{l.Color.X, l.Color.Y, l.Color.Z})
+	SetUniformVec3(sp, "lightDir", [3]float32{l.Direction.X, l.Direction.Y, l.Direction.Z})
+	SetUniformFloat(sp, "ambientStrength", l.AmbientStrength)
+	SetUniformFloat(sp, "specularStrength", l.SpecularStrength)
+	SetUniformFloat(sp, "shininess", l.Shininess)
 
 	// ----------- Render por modelo -----------
 
@@ -53,7 +53,7 @@ func (a *App) Draw() {
 		for _, m := range entry.LoadedModel.Meshes {
 
 			modelMat := gmath.MatMul(baseMat, gmath.Mat4(m.Transform))
-			gmath.SetUniformMat4(sp, "model", modelMat)
+			SetUniformMat4(sp, "model", modelMat)
 
 			// Material
 			bcLoc := gl.GetUniformLocation(sp, gl.Str("baseColor\x00"))
