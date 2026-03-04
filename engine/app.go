@@ -10,7 +10,7 @@ type App struct {
 	Window         *Window
 	DrawingContext DrawingContext
 	TimeAccum      float64
-	Models         []model.Model
+	ModelManager   *model.ModelManager
 	Camera         Camera
 	Light          Light
 }
@@ -32,7 +32,7 @@ func NewApp(width, height int, title string) *App {
 		DrawingContext: DrawingContext{
 			ShaderProgram: createShaderProgram(),
 		},
-		Models: []model.Model{},
+		ModelManager: model.NewModelManager(),
 		Camera: NewFPSCamera(window.GLFWWindow),
 		Light:  DefaultLight(),
 	}

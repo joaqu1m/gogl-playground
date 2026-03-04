@@ -35,7 +35,7 @@ func (a *App) Draw() {
 
 	// ----------- Render por modelo -----------
 
-	for _, entry := range a.Models {
+	for _, entry := range a.ModelManager.GetModels() {
 
 		t := entry.Transform
 
