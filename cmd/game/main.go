@@ -43,32 +43,31 @@ func main() {
 	// registered by NewFPSCamera above, so moving the real mouse
 	// in the window will make the scene look around.
 
-	app.Models = []model.Model{
-		model.NewModel(
-			"Eleven",
-			"assets/dead_by_daylight_-_eleven.glb",
-			entities.Transform{
-				Position: gmath.Vec3{X: 0, Y: 0, Z: 0},
-				Rotation: gmath.QuatFromAxisAngle(
-					gmath.Vec3{X: 0, Y: 0, Z: 0},
-					float32(math.Pi/2),
-				),
-				Scale: gmath.Vec3{X: 0.01, Y: 0.01, Z: 0.01},
-			},
-		),
-		model.NewModel(
-			"Shield",
-			"assets/shield.glb",
-			entities.Transform{
-				Position: gmath.Vec3{X: 2, Y: 0, Z: 0},
-				Rotation: gmath.QuatFromAxisAngle(
-					gmath.Vec3{X: 0, Y: 0, Z: 0},
-					float32(math.Pi/2),
-				),
-				Scale: gmath.Vec3{X: 1, Y: 1, Z: 1},
-			},
-		),
-	}
+	app.ModelManager.AddModel(model.NewModel(
+		"Eleven",
+		"assets/dead_by_daylight_-_eleven.glb",
+		entities.Transform{
+			Position: gmath.Vec3{X: 0, Y: 0, Z: 0},
+			Rotation: gmath.QuatFromAxisAngle(
+				gmath.Vec3{X: 0, Y: 0, Z: 0},
+				float32(math.Pi/2),
+			),
+			Scale: gmath.Vec3{X: 0.01, Y: 0.01, Z: 0.01},
+		},
+	))
+
+	app.ModelManager.AddModel(model.NewModel(
+		"Shield",
+		"assets/shield.glb",
+		entities.Transform{
+			Position: gmath.Vec3{X: 2, Y: 0, Z: 0},
+			Rotation: gmath.QuatFromAxisAngle(
+				gmath.Vec3{X: 0, Y: 0, Z: 0},
+				float32(math.Pi/2),
+			),
+			Scale: gmath.Vec3{X: 1, Y: 1, Z: 1},
+		},
+	))
 
 	// the FPS camera created by NewApp already installs a mouse
 	// callback and hides the cursor.  you can still override the
