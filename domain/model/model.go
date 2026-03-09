@@ -13,6 +13,10 @@ type Model struct {
 	LoadedModel gltfloader.GLTFModel
 }
 
+func (m *Model) Destroy() {
+	m.LoadedModel.Destroy()
+}
+
 func NewModel(name, filePath string, transform entities.Transform) Model {
 
 	logger.Debugf("Loading model %s from path %s", name, filePath)

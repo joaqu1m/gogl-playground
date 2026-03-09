@@ -35,3 +35,9 @@ func (mm *ModelManager) RemoveModel(name string) {
 		}
 	}
 }
+
+func (mm *ModelManager) Destroy() {
+	for i := range mm.Models {
+		mm.Models[i].Destroy()
+	}
+}

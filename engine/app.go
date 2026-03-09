@@ -42,6 +42,12 @@ func NewApp(width, height int, title string) *App {
 	}
 }
 
+func (a *App) Shutdown() {
+	a.ModelManager.Destroy()
+	gl.DeleteProgram(a.DrawingContext.ShaderProgram)
+	a.DrawingContext.ShaderProgram = 0
+}
+
 func (a *App) Run() {
 	previousTime := glfw.GetTime()
 
@@ -58,6 +64,7 @@ func (a *App) Run() {
 	}
 
 	logger.Infof("Exiting game loop")
+	a.Shutdown()
 	glfw.Terminate()
 	logger.Infof("Game closed")
 }
