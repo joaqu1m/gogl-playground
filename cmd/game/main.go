@@ -4,12 +4,10 @@ import (
 	"math"
 	"runtime"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/joaqu1m/gogl-playground/domain/model"
 	"github.com/joaqu1m/gogl-playground/engine"
 	"github.com/joaqu1m/gogl-playground/gmath"
 	"github.com/joaqu1m/gogl-playground/libs/entities"
-	"github.com/joaqu1m/gogl-playground/libs/logger"
 )
 
 const (
@@ -69,28 +67,5 @@ func main() {
 		},
 	))
 
-	// the FPS camera created by NewApp already installs a mouse
-	// callback and hides the cursor.  you can still override the
-	// behavior here if you need custom logic.
-
-	previousTime := glfw.GetTime()
-
-	for !app.Window.GLFWWindow.ShouldClose() {
-
-		currentTime := glfw.GetTime()
-		app.TimeAccum = currentTime - previousTime
-		previousTime = currentTime
-
-		// update camera position/orientation before drawing
-		app.Camera.Update(float32(app.TimeAccum))
-		app.Draw()
-
-		app.Window.GLFWWindow.SwapBuffers()
-		glfw.PollEvents()
-	}
-
-	logger.Infof("Exiting game loop")
-	glfw.Terminate()
-
-	logger.Infof("Game closed")
+	app.Run()
 }
