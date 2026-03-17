@@ -19,3 +19,8 @@ func SetUniformFloat(program uint32, name string, v float32) {
 	loc := gl.GetUniformLocation(program, gl.Str(name+"\x00"))
 	gl.Uniform1f(loc, v)
 }
+
+func SetUniformInt(program uint32, name string, v int32) {
+	loc := gl.GetUniformLocation(program, gl.Str(name+"\x00"))
+	gl.Uniform1i(loc, v)
+}

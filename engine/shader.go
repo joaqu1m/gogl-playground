@@ -33,16 +33,90 @@ uniform sampler2D diffuseMap;
 uniform vec4 baseColor;
 uniform int useTexture;
 
-// Light uniforms — values sent from Go at runtime
-uniform vec3 lightColor;
-uniform vec3 lightDir;
-uniform float ambientStrength;
 uniform vec3 viewPos;
 uniform float specularStrength;
 uniform float shininess;
 
+#define MAX_LIGHTS 8
+#define LIGHT_DIRECTIONAL 0
+#define LIGHT_POINT       1
+#define LIGHT_SPOT        2
+
+struct Light {
+	int type;
+	vec3 position;
+	vec3 direction;
+	vec3 color;
+	float ambient;
+	float constant;
+	float linear;
+	float quadratic;
+	float cutOff;
+	float outerCutOff;
+};
+
+uniform Light lights[MAX_LIGHTS];
+uniform int numLights;
+
+vec3 calcDirectional(Light l, vec3 norm, vec3 viewDir) {
+	vec3 lightDir = normalize(-l.direction);
+
+	vec3 ambient = l.ambient * l.color;
+
+	float diff   = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = diff * l.color;
+
+	vec3 halfDir  = normalize(lightDir + viewDir);
+	float spec    = pow(max(dot(norm, halfDir), 0.0), shininess);
+	vec3 specular = specularStrength * spec * l.color;
+
+	return ambient + diffuse + specular;
+}
+
+vec3 calcPoint(Light l, vec3 norm, vec3 viewDir) {
+	vec3 lightDir = normalize(l.position - vFragPos);
+
+	float dist        = length(l.position - vFragPos);
+	float attenuation = 1.0 / (l.constant + l.linear * dist + l.quadratic * dist * dist);
+
+	vec3 ambient = l.ambient * l.color;
+
+	float diff   = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = diff * l.color;
+
+	vec3 halfDir  = normalize(lightDir + viewDir);
+	float spec    = pow(max(dot(norm, halfDir), 0.0), shininess);
+	vec3 specular = specularStrength * spec * l.color;
+
+	return (ambient + diffuse + specular) * attenuation;
+}
+
+vec3 calcSpot(Light l, vec3 norm, vec3 viewDir) {
+	vec3 lightDir = normalize(l.position - vFragPos);
+
+	float theta     = dot(lightDir, normalize(-l.direction));
+	float epsilon   = l.cutOff - l.outerCutOff;
+	float intensity = clamp((theta - l.outerCutOff) / epsilon, 0.0, 1.0);
+
+	float dist        = length(l.position - vFragPos);
+	float attenuation = 1.0 / (l.constant + l.linear * dist + l.quadratic * dist * dist);
+
+	vec3 ambient = l.ambient * l.color;
+
+	float diff   = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = diff * l.color;
+
+	vec3 halfDir  = normalize(lightDir + viewDir);
+	float spec    = pow(max(dot(norm, halfDir), 0.0), shininess);
+	vec3 specular = specularStrength * spec * l.color;
+
+	diffuse  *= intensity;
+	specular *= intensity;
+
+	return (ambient + diffuse + specular) * attenuation;
+}
+
 void main() {
-	// Base color: texture or material color
 	vec3 color;
 	if (useTexture == 1) {
 		color = texture(diffuseMap, vTexCoord).rgb * baseColor.rgb;
@@ -50,29 +124,21 @@ void main() {
 		color = baseColor.rgb;
 	}
 
-	vec3 norm  = normalize(vNormal);
-	vec3 light = normalize(-lightDir);
+	vec3 norm    = normalize(vNormal);
+	vec3 viewDir = normalize(viewPos - vFragPos);
 
-	// Ambient: constant base light, no angle involved
-	vec3 ambient = ambientStrength * lightColor;
+	vec3 result = vec3(0.0);
+	for (int i = 0; i < numLights; i++) {
+		if (lights[i].type == LIGHT_DIRECTIONAL) {
+			result += calcDirectional(lights[i], norm, viewDir);
+		} else if (lights[i].type == LIGHT_POINT) {
+			result += calcPoint(lights[i], norm, viewDir);
+		} else if (lights[i].type == LIGHT_SPOT) {
+			result += calcSpot(lights[i], norm, viewDir);
+		}
+	}
 
-	// Diffuse: brightness depends on the angle between the surface normal and the light.
-	// dot(normal, light) = 1.0 if facing the light, 0.0 if perpendicular, <0 if facing away.
-	// max(..., 0.0) clamps negative values so back-faces don't subtract light.
-	float diff   = max(dot(norm, light), 0.0);
-	vec3 diffuse = diff * lightColor;
-
-	// Specular (Blinn-Phong): shiny highlight that changes based on where the camera is.
-	// halfDir is the vector halfway between the light and the observer.
-	// The closer halfDir is to the surface normal, the stronger the highlight.
-	// shininess controls how tight/small the highlight spot is.
-	vec3 viewDir  = normalize(viewPos - vFragPos);
-	vec3 halfDir  = normalize(light + viewDir);
-	float spec    = pow(max(dot(norm, halfDir), 0.0), shininess);
-	vec3 specular = specularStrength * spec * lightColor;
-
-	vec3 result = (ambient + diffuse + specular) * color;
-	FragColor = vec4(result, baseColor.a);
+	FragColor = vec4(result * color, baseColor.a);
 }` + "\x00"
 
 func createShaderProgram() uint32 {
