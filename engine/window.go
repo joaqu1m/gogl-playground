@@ -12,7 +12,7 @@ type Window struct {
 	Title      string
 }
 
-func NewWindow(height, width int, title string) *Window {
+func NewWindow(width, height int, title string) *Window {
 
 	if err := glfw.Init(); err != nil {
 		logger.Fatalf(err.Error())
