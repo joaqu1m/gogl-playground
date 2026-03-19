@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"fmt"
+
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/joaqu1m/gogl-playground/gmath"
 )
@@ -26,12 +28,32 @@ func (a *App) Draw() {
 	pos := a.Camera.Position()
 	SetUniformVec3(sp, "viewPos", [3]float32{pos.X, pos.Y, pos.Z})
 
-	l := a.Light
-	SetUniformVec3(sp, "lightColor", [3]float32{l.Color.X, l.Color.Y, l.Color.Z})
-	SetUniformVec3(sp, "lightDir", [3]float32{l.Direction.X, l.Direction.Y, l.Direction.Z})
-	SetUniformFloat(sp, "ambientStrength", l.AmbientStrength)
-	SetUniformFloat(sp, "specularStrength", l.SpecularStrength)
-	SetUniformFloat(sp, "shininess", l.Shininess)
+	// Material specular properties (will move to per-mesh material later)
+	SetUniformFloat(sp, "specularStrength", 0.5)
+	SetUniformFloat(sp, "shininess", 32.0)
+
+	// Send all lights to the shader
+	numLights := len(a.Lights)
+	if numLights > 8 {
+		numLights = 8
+	}
+	SetUniformInt(sp, "numLights", int32(numLights))
+
+	for i := 0; i < numLights; i++ {
+		l := a.Lights[i]
+		prefix := fmt.Sprintf("lights[%d].", i)
+
+		SetUniformInt(sp, prefix+"type", int32(l.Type))
+		SetUniformVec3(sp, prefix+"position", [3]float32{l.Position.X, l.Position.Y, l.Position.Z})
+		SetUniformVec3(sp, prefix+"direction", [3]float32{l.Direction.X, l.Direction.Y, l.Direction.Z})
+		SetUniformVec3(sp, prefix+"color", [3]float32{l.Color.X, l.Color.Y, l.Color.Z})
+		SetUniformFloat(sp, prefix+"ambient", l.AmbientStrength)
+		SetUniformFloat(sp, prefix+"constant", l.Constant)
+		SetUniformFloat(sp, prefix+"linear", l.Linear)
+		SetUniformFloat(sp, prefix+"quadratic", l.Quadratic)
+		SetUniformFloat(sp, prefix+"cutOff", l.CutOff)
+		SetUniformFloat(sp, prefix+"outerCutOff", l.OuterCutOff)
+	}
 
 	// ----------- Render por modelo -----------
 
