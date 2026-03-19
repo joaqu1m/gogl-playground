@@ -19,6 +19,8 @@ import (
 type GLTFMesh struct {
 	Name        string
 	VAO         uint32
+	VBO         uint32
+	EBO         uint32
 	VertexCount int32
 	IndexCount  int32
 	HasIndices  bool
@@ -26,6 +28,33 @@ type GLTFMesh struct {
 	HasTexture  bool
 	BaseColor   [4]float32
 	Transform   [16]float32 // Node world transform, column-major
+}
+
+// Destroy releases the OpenGL resources associated with this mesh.
+func (m *GLTFMesh) Destroy() {
+	if m.VAO != 0 {
+		gl.DeleteVertexArrays(1, &m.VAO)
+		m.VAO = 0
+	}
+	if m.VBO != 0 {
+		gl.DeleteBuffers(1, &m.VBO)
+		m.VBO = 0
+	}
+	if m.HasIndices && m.EBO != 0 {
+		gl.DeleteBuffers(1, &m.EBO)
+		m.EBO = 0
+	}
+	if m.HasTexture && m.TextureID != 0 {
+		gl.DeleteTextures(1, &m.TextureID)
+		m.TextureID = 0
+	}
+}
+
+// Destroy releases the OpenGL resources for all meshes in the model.
+func (m *GLTFModel) Destroy() {
+	for _, mesh := range m.Meshes {
+		mesh.Destroy()
+	}
 }
 
 // GLTFModel agrupa todas as meshes carregadas de um arquivo glTF/GLB.
@@ -344,6 +373,7 @@ func loadPrimitive(doc *gltf.Document, prim *gltf.Primitive, textures map[int]ui
 
 	glMesh := &GLTFMesh{
 		VAO:        vao,
+		VBO:        vbo,
 		HasTexture: hasTexture,
 		TextureID:  texID,
 		BaseColor:  baseColor,
@@ -354,6 +384,7 @@ func loadPrimitive(doc *gltf.Document, prim *gltf.Primitive, textures map[int]ui
 		gl.GenBuffers(1, &ebo)
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(indices), gl.STATIC_DRAW)
+		glMesh.EBO = ebo
 		glMesh.HasIndices = true
 		glMesh.IndexCount = int32(len(indices))
 	} else {
