@@ -22,15 +22,15 @@ func MaterialFromMesh(m *gltfloader.GLTFMesh) Material {
 }
 
 // Bind sends this material's uniforms to the shader and binds textures.
-func (mat *Material) Bind(sp uint32) {
-	SetUniformVec4(sp, "baseColor", mat.BaseColor)
+func (mat *Material) Bind(uc *UniformCache) {
+	SetUniformVec4(uc, "baseColor", mat.BaseColor)
 
 	if mat.HasTexture {
-		SetUniformInt(sp, "useTexture", 1)
+		SetUniformInt(uc, "useTexture", 1)
 		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, mat.TextureID)
-		SetUniformInt(sp, "diffuseMap", 0)
+		SetUniformInt(uc, "diffuseMap", 0)
 	} else {
-		SetUniformInt(sp, "useTexture", 0)
+		SetUniformInt(uc, "useTexture", 0)
 	}
 }
