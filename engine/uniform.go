@@ -24,3 +24,8 @@ func SetUniformInt(program uint32, name string, v int32) {
 	loc := gl.GetUniformLocation(program, gl.Str(name+"\x00"))
 	gl.Uniform1i(loc, v)
 }
+
+func SetUniformVec4(program uint32, name string, v [4]float32) {
+	loc := gl.GetUniformLocation(program, gl.Str(name+"\x00"))
+	gl.Uniform4f(loc, v[0], v[1], v[2], v[3])
+}

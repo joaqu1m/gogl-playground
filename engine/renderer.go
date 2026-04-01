@@ -16,14 +16,12 @@ func (a *App) Draw() {
 
 	gl.UseProgram(sp)
 
-	viewMat := a.Camera.ViewMatrix()
+	// ---- Global uniforms ----
 
-	projMat := a.Camera.ProjectionMatrix(
-		float32(a.Window.Width) / float32(a.Window.Height),
-	)
-
-	SetUniformMat4(sp, "view", viewMat)
-	SetUniformMat4(sp, "projection", projMat)
+	SetUniformMat4(sp, "view", a.Camera.ViewMatrix())
+	SetUniformMat4(sp, "projection", a.Camera.ProjectionMatrix(
+		float32(a.Window.Width)/float32(a.Window.Height),
+	))
 
 	pos := a.Camera.Position()
 	SetUniformVec3(sp, "viewPos", [3]float32{pos.X, pos.Y, pos.Z})
@@ -32,7 +30,35 @@ func (a *App) Draw() {
 	SetUniformFloat(sp, "specularStrength", 0.5)
 	SetUniformFloat(sp, "shininess", 32.0)
 
-	// Send all lights to the shader
+	a.sendLights(sp)
+
+	// ---- Render models ----
+
+	for _, entry := range a.ModelManager.GetModels() {
+
+		baseMat := entry.Transform.ToMat4()
+
+		for _, m := range entry.LoadedModel.Meshes {
+
+			modelMat := gmath.MatMul(baseMat, gmath.Mat4(m.Transform))
+			SetUniformMat4(sp, "model", modelMat)
+
+			mat := MaterialFromMesh(m)
+			mat.Bind(sp)
+
+			gl.BindVertexArray(m.VAO)
+
+			if m.HasIndices {
+				gl.DrawElements(gl.TRIANGLES, m.IndexCount, gl.UNSIGNED_INT, gl.PtrOffset(0))
+			} else {
+				gl.DrawArrays(gl.TRIANGLES, 0, m.VertexCount)
+			}
+		}
+	}
+}
+
+// sendLights uploads the light array uniforms to the shader.
+func (a *App) sendLights(sp uint32) {
 	numLights := len(a.Lights)
 	if numLights > 8 {
 		numLights = 8
@@ -53,60 +79,5 @@ func (a *App) Draw() {
 		SetUniformFloat(sp, prefix+"quadratic", l.Quadratic)
 		SetUniformFloat(sp, prefix+"cutOff", l.CutOff)
 		SetUniformFloat(sp, prefix+"outerCutOff", l.OuterCutOff)
-	}
-
-	// ----------- Render por modelo -----------
-
-	for _, entry := range a.ModelManager.GetModels() {
-
-		t := entry.Transform
-
-		// Usa apenas a rotação definida no Transform
-		rotMat := t.Rotation.Normalize().ToMat4()
-		transMat := gmath.MatTranslate(t.Position)
-		scaleMat := gmath.MatScale(t.Scale.X, t.Scale.Y, t.Scale.Z)
-
-		// Ordem correta: T * R * S
-		baseMat := gmath.MatMul(
-			transMat,
-			gmath.MatMul(rotMat, scaleMat),
-		)
-
-		for _, m := range entry.LoadedModel.Meshes {
-
-			modelMat := gmath.MatMul(baseMat, gmath.Mat4(m.Transform))
-			SetUniformMat4(sp, "model", modelMat)
-
-			// Material
-			bcLoc := gl.GetUniformLocation(sp, gl.Str("baseColor\x00"))
-			gl.Uniform4f(
-				bcLoc,
-				m.BaseColor[0],
-				m.BaseColor[1],
-				m.BaseColor[2],
-				m.BaseColor[3],
-			)
-
-			utLoc := gl.GetUniformLocation(sp, gl.Str("useTexture\x00"))
-
-			if m.HasTexture {
-				gl.Uniform1i(utLoc, 1)
-				gl.ActiveTexture(gl.TEXTURE0)
-				gl.BindTexture(gl.TEXTURE_2D, m.TextureID)
-
-				dmLoc := gl.GetUniformLocation(sp, gl.Str("diffuseMap\x00"))
-				gl.Uniform1i(dmLoc, 0)
-			} else {
-				gl.Uniform1i(utLoc, 0)
-			}
-
-			gl.BindVertexArray(m.VAO)
-
-			if m.HasIndices {
-				gl.DrawElements(gl.TRIANGLES, m.IndexCount, gl.UNSIGNED_INT, gl.PtrOffset(0))
-			} else {
-				gl.DrawArrays(gl.TRIANGLES, 0, m.VertexCount)
-			}
-		}
 	}
 }
