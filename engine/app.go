@@ -17,6 +17,7 @@ type App struct {
 
 type DrawingContext struct {
 	ShaderProgram uint32
+	Uniforms      *UniformCache
 }
 
 func NewApp(width, height int, title string) *App {
@@ -29,9 +30,13 @@ func NewApp(width, height int, title string) *App {
 
 	return &App{
 		Window: window,
-		DrawingContext: DrawingContext{
-			ShaderProgram: createShaderProgram(),
-		},
+		DrawingContext: func() DrawingContext {
+			sp := createShaderProgram()
+			return DrawingContext{
+				ShaderProgram: sp,
+				Uniforms:      NewUniformCache(sp),
+			}
+		}(),
 		ModelManager: model.NewModelManager(),
 		Camera: NewFPSCamera(window.GLFWWindow),
 		Lights: []Light{
