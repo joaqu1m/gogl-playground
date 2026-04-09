@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/joaqu1m/gogl-playground/libs/logger"
 )
@@ -28,11 +29,18 @@ func NewWindow(width, height int, title string) *Window {
 		logger.Fatalf(err.Error())
 	}
 
-	return &Window{
+	w := &Window{
 		GLFWWindow: glfwWindow,
 		Width:      width,
 		Height:     height,
 		Title:      title,
 	}
 
+	glfwWindow.SetFramebufferSizeCallback(func(_ *glfw.Window, fbWidth, fbHeight int) {
+		w.Width = fbWidth
+		w.Height = fbHeight
+		gl.Viewport(0, 0, int32(fbWidth), int32(fbHeight))
+	})
+
+	return w
 }
