@@ -39,9 +39,24 @@ func (a *App) DrawMesh(m *gltfloader.GLTFMesh) {
 }
 
 func (a *App) Draw() {
-	uc := a.DrawingContext.Uniforms
+	passes := []RenderPass{
+		{
+			Name:        "geometry",
+			Framebuffer: 0, // default framebuffer (HDR framebuffer later)
+			DrawFunc:    a.geometryPass,
+		},
+	}
 
 	a.BeginFrame()
+
+	for i := range passes {
+		passes[i].Execute()
+	}
+}
+
+func (a *App) geometryPass() {
+	uc := a.DrawingContext.Uniforms
+
 	a.SetGlobalUniforms()
 
 	for _, entry := range a.ModelManager.GetModels() {
