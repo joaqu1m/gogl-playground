@@ -1,9 +1,6 @@
 package gmath
 
-import (
-	"math"
-	smath "math"
-)
+import "math"
 
 type Mat4 [16]float32
 
@@ -30,8 +27,8 @@ func MatIdentity() Mat4 {
 }
 
 func MatRotateX(angle float32) Mat4 {
-	c := float32(smath.Cos(float64(angle)))
-	s := float32(smath.Sin(float64(angle)))
+	c := float32(math.Cos(float64(angle)))
+	s := float32(math.Sin(float64(angle)))
 
 	return Mat4{
 		1, 0, 0, 0,
@@ -42,8 +39,8 @@ func MatRotateX(angle float32) Mat4 {
 }
 
 func MatRotateY(angle float32) Mat4 {
-	c := float32(smath.Cos(float64(angle)))
-	s := float32(smath.Sin(float64(angle)))
+	c := float32(math.Cos(float64(angle)))
+	s := float32(math.Sin(float64(angle)))
 
 	return Mat4{
 		c, 0, -s, 0,
@@ -54,8 +51,8 @@ func MatRotateY(angle float32) Mat4 {
 }
 
 func MatRotateZ(angle float32) Mat4 {
-	c := float32(smath.Cos(float64(angle)))
-	s := float32(smath.Sin(float64(angle)))
+	c := float32(math.Cos(float64(angle)))
+	s := float32(math.Sin(float64(angle)))
 
 	return Mat4{
 		c, s, 0, 0,
@@ -97,7 +94,7 @@ func MatScale(sx, sy, sz float32) Mat4 {
 }
 
 func MatPerspective(fovy, aspect, near, far float32) Mat4 {
-	f := float32(1.0 / smath.Tan(float64(fovy/2.0)))
+	f := float32(1.0 / math.Tan(float64(fovy/2.0)))
 	nf := near - far
 
 	return Mat4{
@@ -138,7 +135,7 @@ func vecDot(a, b [3]float32) float32 {
 }
 
 func vecNormalize(v [3]float32) [3]float32 {
-	l := float32(smath.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])))
+	l := float32(math.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])))
 
 	if l == 0 {
 		return v
