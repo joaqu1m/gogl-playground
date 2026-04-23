@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/joaqu1m/gogl-playground/gmath"
 	"github.com/joaqu1m/gogl-playground/libs/entities"
 	"github.com/joaqu1m/gogl-playground/libs/gltfloader"
 	"github.com/joaqu1m/gogl-playground/libs/logger"
@@ -11,6 +12,13 @@ type Model struct {
 	FilePath    string
 	Transform   entities.Transform
 	LoadedModel gltfloader.GLTFModel
+}
+
+// MeshWorldMatrix computes the final world matrix for a mesh within this model.
+// Combines the entity transform with the mesh's node transform from glTF.
+func (m *Model) MeshWorldMatrix(meshTransform [16]float32) gmath.Mat4 {
+	baseMat := m.Transform.ToMat4()
+	return gmath.MatMul(baseMat, gmath.Mat4(meshTransform))
 }
 
 func (m *Model) Destroy() {

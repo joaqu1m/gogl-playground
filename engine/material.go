@@ -7,17 +7,21 @@ import (
 
 // Material holds the visual properties of a mesh surface.
 type Material struct {
-	BaseColor  [4]float32
-	TextureID  uint32
-	HasTexture bool
+	BaseColor        [4]float32
+	TextureID        uint32
+	HasTexture       bool
+	SpecularStrength float32
+	Shininess        float32
 }
 
 // MaterialFromMesh extracts a Material from the loader's raw mesh data.
 func MaterialFromMesh(m *gltfloader.GLTFMesh) Material {
 	return Material{
-		BaseColor:  m.BaseColor,
-		TextureID:  m.TextureID,
-		HasTexture: m.HasTexture,
+		BaseColor:        m.BaseColor,
+		TextureID:        m.TextureID,
+		HasTexture:       m.HasTexture,
+		SpecularStrength: 0.5,
+		Shininess:        32.0,
 	}
 }
 
@@ -33,4 +37,7 @@ func (mat *Material) Bind(uc *UniformCache) {
 	} else {
 		SetUniformInt(uc, "useTexture", 0)
 	}
+
+	SetUniformFloat(uc, "specularStrength", mat.SpecularStrength)
+	SetUniformFloat(uc, "shininess", mat.Shininess)
 }

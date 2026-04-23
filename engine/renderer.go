@@ -4,19 +4,19 @@ import (
 	"fmt"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
-	"github.com/joaqu1m/gogl-playground/gmath"
+	"github.com/joaqu1m/gogl-playground/libs/gltfloader"
 )
 
-func (a *App) Draw() {
-
-	uc := a.DrawingContext.Uniforms
-
+// BeginFrame clears the screen and activates the shader program.
+func (a *App) BeginFrame() {
 	gl.ClearColor(0.1, 0.1, 0.15, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
 	gl.UseProgram(a.DrawingContext.ShaderProgram)
+}
 
-	// ---- Global uniforms ----
+// SetGlobalUniforms sends camera and lighting data to the shader.
+func (a *App) SetGlobalUniforms() {
+	uc := a.DrawingContext.Uniforms
 
 	SetUniformMat4(uc, "view", a.Camera.ViewMatrix())
 	SetUniformMat4(uc, "projection", a.Camera.ProjectionMatrix(
@@ -26,33 +26,49 @@ func (a *App) Draw() {
 	pos := a.Camera.Position()
 	SetUniformVec3(uc, "viewPos", [3]float32{pos.X, pos.Y, pos.Z})
 
-	// Material specular properties (will move to per-mesh material later)
-	SetUniformFloat(uc, "specularStrength", 0.5)
-	SetUniformFloat(uc, "shininess", 32.0)
-
 	a.sendLights(uc)
+}
 
-	// ---- Render models ----
+// DrawMesh issues the draw call for a single mesh (VAO must already be bound).
+func (a *App) DrawMesh(m *gltfloader.GLTFMesh) {
+	if m.HasIndices {
+		gl.DrawElements(gl.TRIANGLES, m.IndexCount, gl.UNSIGNED_INT, gl.PtrOffset(0))
+	} else {
+		gl.DrawArrays(gl.TRIANGLES, 0, m.VertexCount)
+	}
+}
+
+func (a *App) Draw() {
+	passes := []RenderPass{
+		{
+			Name:        "geometry",
+			Framebuffer: 0, // default framebuffer (HDR framebuffer later)
+			DrawFunc:    a.geometryPass,
+		},
+	}
+
+	a.BeginFrame()
+
+	for i := range passes {
+		passes[i].Execute()
+	}
+}
+
+func (a *App) geometryPass() {
+	uc := a.DrawingContext.Uniforms
+
+	a.SetGlobalUniforms()
 
 	for _, entry := range a.ModelManager.GetModels() {
-
-		baseMat := entry.Transform.ToMat4()
-
 		for _, m := range entry.LoadedModel.Meshes {
-
-			modelMat := gmath.MatMul(baseMat, gmath.Mat4(m.Transform))
+			modelMat := entry.MeshWorldMatrix(m.Transform)
 			SetUniformMat4(uc, "model", modelMat)
 
 			mat := MaterialFromMesh(m)
 			mat.Bind(uc)
 
 			gl.BindVertexArray(m.VAO)
-
-			if m.HasIndices {
-				gl.DrawElements(gl.TRIANGLES, m.IndexCount, gl.UNSIGNED_INT, gl.PtrOffset(0))
-			} else {
-				gl.DrawArrays(gl.TRIANGLES, 0, m.VertexCount)
-			}
+			a.DrawMesh(m)
 		}
 	}
 }
