@@ -1,2 +1,6 @@
 logs
 game.exe
+
+# binarios temporarios do delve (dlv debug/trace) e builds de debug
+__debug_bin*
+game-debug.exe
